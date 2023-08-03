@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Augmented Reality 3D Model Viewer</title>
+  <style>
+    /* Add any custom styles here */
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <h1>Augmented Reality 3D Model Viewer</h1>
+  <button onclick="startAR()">Start AR</button> <!-- Add a button to start AR -->
+  <script>
+
+    function startAR() {
+	main()
+      console.log("hm");
+    }
+	
+	// ar_viewer.js
+
+// Function to load a 3D model and display it in AR
+async function loadModelWithMarker(modelPath, markerPath) {
+  const session = await initializeAREnvironment();
+  if (!session) return;
+
+  const modelLoader = new THREE.GLTFLoader();
+
+  // Load the 3D model from the given modelPath
+  modelLoader.load(
+    modelPath,
+    (gltf) => {
+      // The model is loaded successfully, now attach it to the marker
+      const markerSource = new THREE.ArMarkerSource();
+      markerSource.setPath(markerPath);
+
+      // Create the AR scene and add the model to it
+      const scene = new THREE.Scene();
+      scene.add(gltf.scene);
+
+      // Create the AR context and render the scene
+      const arContext = new THREE.ArContext(session);
+      arContext.updateScene(scene, markerSource.source);
+
+      // Start the AR session
+      session.addEventListener('end', () => {
+        arContext.dispose();
+      });
+      session.start();
+    },
+    (xhr) => {
+      // This is a progress callback if needed
+    },
+    (error) => {
+      // Failed to load the model
+      showErrorMessage('Failed to load the 3D model.');
+    }
+  );
+}
+
+// Function to get user input and select a 3D model and its corresponding marker
+function getUserInput() {
+  // In this function, you can implement UI elements to let the user choose a model and a marker
+  // Return the selected model path and marker path as an object
+  const selectedModelPath = 'model.glb';
+  const selectedMarkerPath = 'path/to/selected/marker.patt';
+  return { modelPath: selectedModelPath, markerPath: selectedMarkerPath };
+}
+async function loadModelsList() {
+  return new Promise((resolve) => {
+    // Simulate an asynchronous fetch of the models list
+    setTimeout(() => {
+      resolve(modelsList);
+    }, 1000); // Adjust the delay as needed
+  });
+}
+// Main function to control the flow
+async function main() {
+  // Load the list of available 3D models
+  const modelsList = await loadModelsList();
+
+  // Set up the AR environment with marker support
+  const session = await initializeAREnvironment();
+  if (!session) return;
+
+  // Get user input for the selected model and its marker
+  const { modelPath, markerPath } = getUserInput();
+
+  // Load and display the selected 3D model with the marker in AR
+  await loadModelWithMarker(modelPath, markerPath);
+}
+
+// ar_utils.js
+
+// Function to initialize the augmented reality environment
+async function initializeAREnvironment() {
+  // Check if the browser supports WebXR (Web-based AR)
+  if ('xr' in navigator && 'isSessionSupported' in navigator.xr) {
+    try {
+      const session = await navigator.xr.requestSession('immersive-ar', {
+        // You can add any optional AR session features here
+      });
+      return session;
+    } catch (error) {
+      showErrorMessage('Unable to start AR session.');
+    }
+  } else {
+    showErrorMessage('WebXR is not supported in this browser.');
+  }
+}
+
+// Function to show simple error messages
+function showErrorMessage(message) {
+  // Display the error message to the user (you can customize the UI here)
+  alert(message);
+}
+
+// models_list.js
+
+// Define the list of available 3D models with their file paths or URLs
+const modelsList = [
+  { name: 'Model 1', path: '/model.glb' },
+  { name: 'Model 2', path: 'path/to/model2.glb' },
+  // Add more models as needed
+];
+
+
+  </script>
+</body>
+</html>
